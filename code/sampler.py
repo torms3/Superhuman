@@ -1,11 +1,3 @@
-#!/usr/bin/env python
-__doc__ = """
-
-Data sampler.
-
-Kisuk Lee <kisuklee@mit.edu>, 2017
-"""
-
 from __future__ import print_function
 
 import numpy as np
@@ -140,7 +132,7 @@ if __name__ == "__main__":
     data_dir = sys.argv[1]
 
     print("Creating data samplers...")
-    sampler = get_sampler(data_dir, long_range=True, aug=[1,1,1]):
+    sampler = get_sampler(data_dir, long_range=True, aug=[1,1,1])
 
     # 10 random samples.
     print("Sampling...")

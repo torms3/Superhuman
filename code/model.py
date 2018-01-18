@@ -151,7 +151,7 @@ class UpsampleMod(nn.Module):
         return self.activation(self.bn(self.conv(self.up(x)) + skip))
 
 
-class Conv(nn.Module):
+class Conv1(nn.Module):
     """
     Single convolution module.
     """
@@ -198,7 +198,7 @@ class Model(nn.Module):
         self.depth = depth
 
         # Input feature embedding without batchnorm.
-        self.embed_in = Conv(D_in, embed_nin, embed_ks, st=(1,1,1))
+        self.embed_in = Conv1(D_in, embed_nin, embed_ks, st=(1,1,1))
         D_in = embed_nin
 
         # Contracting/downsampling pathway.
@@ -224,7 +224,7 @@ class Model(nn.Module):
             self.add_dconv_mod(d, D_in, fs, ks)
 
         # Output feature embedding without batchnorm.
-        self.embed_out = Conv(D_in, embed_nout, embed_ks, st=(1,1,1))
+        self.embed_out = Conv1(D_in, embed_nout, embed_ks, st=(1,1,1))
         D_in = embed_nout
 
         # Output by spec.

@@ -1,10 +1,4 @@
-#!/usr/bin/env python
-__doc__ = """
-
-Training options.
-
-Kisuk Lee <kisuklee@mit.edu>, 2017
-"""
+from __future__ import print_function
 
 import argparse
 import os
@@ -21,7 +15,7 @@ class BaseOptions(object):
     def initialize(self):
         self.parser.add_argument('--data_dir', required=True)
         self.parser.add_argument('--exp_name', required=True)
-        
+
         self.parser.add_argument('--base_lr', type=float, default=0.01)
         self.parser.add_argument('--max_iter', type=int, default=1000000)
         self.parser.add_argument('--batch_size', type=int, default=1)
@@ -42,11 +36,11 @@ class BaseOptions(object):
         # Model spec.
         opt.fov = (32,160,160)
         opt.depth = 4
-        opt.in_spec = dict('input'=(1,) + opt.fov)
+        opt.in_spec = dict(input=(1,) + opt.fov)
         if opt.long_range:
-            opt.out_spec = dict('affinity'=(12,) + opt.fov)
+            opt.out_spec = dict(affinity=(12,) + opt.fov)
         else:
-            opt.out_spec = dict('affinity'=(3,) + opt.fov)
+            opt.out_spec = dict(affinity=(3,) + opt.fov)
 
         # Data augmentation.
         opt.aug = [opt.misalign, opt.missing, opt.blur]

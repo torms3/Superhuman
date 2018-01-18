@@ -1,10 +1,4 @@
-#!/usr/bin/env python
-__doc__ = """
-
-Training.
-
-Kisuk Lee <kisuklee@mit.edu>, 2017
-"""
+from __future__ import print_function
 
 import numpy as np
 import os
