@@ -31,4 +31,7 @@ class AsyncSampler(object):
 
     def get(self):
         """Pulls a sample from the queue."""
-        return self.q.get(block=True)
+        sample = self.q.get(block=True)
+        for k, v in sample.items():
+            sample[k] = np.expand_dims(v, axis=0)
+        return sample
