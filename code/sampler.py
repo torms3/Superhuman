@@ -124,14 +124,15 @@ class Sampler(object):
 if __name__ == "__main__":
 
     import h5py
-    import sys
     import time
 
-    assert len(sys.argv) > 1
-    data_dir = sys.argv[1]
+    from options import BaseOptions
+
+    # Options.
+    opt = BaseOptions().parse()
 
     print("Creating data samplers...")
-    sampler = get_sampler(data_dir, long_range=True, aug=[1,1,1])
+    sampler = get_sampler(opt)
 
     # 10 random samples.
     print("Sampling...")
