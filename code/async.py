@@ -1,4 +1,4 @@
-import h5py
+import numpy as np
 import os
 import sys
 
