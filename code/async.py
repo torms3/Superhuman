@@ -9,7 +9,7 @@ else:
 from threading import Thread
 
 
-def sampler_daemon(sampler, q):
+def sampler_func(sampler, q):
     """Function run by the thread."""
     while True:
         sample = sampler(imgs=["input"])
@@ -22,14 +22,11 @@ class AsyncSampler(object):
     """
     def __init__(self, sampler, queue_size=30):
         self.q = queue.Queue(queue_size)
-        self.t = Thread(target=sampler_daemon, args=(sampler, self.q))
+        self.t = Thread(target=sampler_func, args=(sampler, self.q))
         self.t.daemon = True
         self.t.start()
 
     def __call__(self):
-        return self.get()
-
-    def get(self):
         """Pulls a sample from the queue."""
         sample = self.q.get(block=True)
         for k, v in sample.items():

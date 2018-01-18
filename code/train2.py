@@ -25,6 +25,7 @@ def train(opt):
     # Create a data sampler.
     sampler = get_sampler(opt)
     train_sampler = AsyncSampler(sampler['train'])
+    val_sampler = AsyncSampler(sampler['val'])
 
     # Create an optimizer and a loss function.
     optimizer = torch.optim.Adam(net.parameters(), lr=opt.base_lr)
@@ -81,31 +82,12 @@ def eval_loss(out_spec, preds, labels, masks, loss_fn):
     return losses, nmasks
 
 
-def fetch_sample(sampler, n=1):
-    """
-    Pulls n samples from the sampler.
-    """
-    slices = [sampler() for i in range(n)]
-
-    # Reshape to add sample dimension (minibatch size = 1).
-    for i, sample in enumerate(slices):
-        for k, v in sample.items():
-            slices[i][k] = np.expand_dims(v, axis=0)
-
-    # Concatentate the slices into one sample.
-    sample = dict()
-    for k in slices[0].keys():
-        sample[k] = np.concatenate([slices[i][k] for i in range(n)])
-
-    return sample
-
-
 def make_variable(np_arr, requires_grad=True, volatile=False):
     """Creates a torch.autograd.Variable from a np array."""
     if not volatile:
-        return Variable(torch.from_numpy(np_arr.copy()), requires_grad=requires_grad).cuda()
+        return Variable(torch.from_numpy(np_arr), requires_grad=requires_grad).cuda()
     else:
-        return Variable(torch.from_numpy(np_arr.copy()), volatile=True).cuda()
+        return Variable(torch.from_numpy(np_arr), volatile=True).cuda()
 
 
 def make_variables(sample, opt):
@@ -114,9 +96,9 @@ def make_variables(sample, opt):
     labels = opt.out_spec.keys()
     masks  = [l + '_mask' for l in labels]
 
-    input_vars = [make_variable(sample[k], True)  for k in inputs]
-    label_vars = [make_variable(sample[k], False) for k in labels]
-    mask_vars  = [make_variable(sample[k], False) for k in masks]
+    input_vars = [make_variable(sample[k], requires_grad=True)  for k in inputs]
+    label_vars = [make_variable(sample[k], requires_grad=False) for k in labels]
+    mask_vars  = [make_variable(sample[k], requires_grad=False) for k in masks]
 
     return input_vars, label_vars, mask_vars
 

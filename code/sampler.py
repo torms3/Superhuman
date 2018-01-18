@@ -136,15 +136,15 @@ if __name__ == "__main__":
 
     # 10 random samples.
     print("Sampling...")
-    for i in range(10):
+    for i in range(opt.max_iter):
         start = time.time()
         sample = sampler['train'](imgs=['input'])
         print("Elapsed: %.3f" % (time.time() - start))
-        fname = 'sample%.2d.h5' % (i+1)
-        print("Save as {}...".format(fname))
-        if os.path.exists(fname):
-            os.remove(fname)
-        f = h5py.File(fname)
-        for name, data in sample.items():
-            f.create_dataset('/' + name, data=data)
-        f.close()
+        # fname = 'sample%.2d.h5' % (i+1)
+        # print("Save as {}...".format(fname))
+        # if os.path.exists(fname):
+        #     os.remove(fname)
+        # f = h5py.File(fname)
+        # for name, data in sample.items():
+        #     f.create_dataset('/' + name, data=data)
+        # f.close()

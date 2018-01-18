@@ -25,7 +25,7 @@ def train(opt):
     # Create a data sampler.
     sampler = get_sampler(opt)
     dataset = SNEMI3D_Dataset(sampler['train'], size=opt.max_iter)
-    dataloader = DataLoader(dataset, batch_size=opt.batch_size, pin_memory=True)
+    dataloader = DataLoader(dataset, batch_size=1, num_workers=1, pin_memory=True)
 
     # Create an optimizer and a loss function.
     optimizer = torch.optim.Adam(net.parameters(), lr=opt.base_lr)
@@ -34,9 +34,7 @@ def train(opt):
     start = time.time()
     print("======= BEGIN TRAINING LOOP ========")
     for i, sample in enumerate(dataloader):
-        t0 = time.time()
         inputs, labels, masks = make_variables(sample, opt)
-        t1 = time.time()
 
         # Running forward pass.
         backend = time.time()
@@ -48,7 +46,7 @@ def train(opt):
         # Elapsed time.
         elapsed  = time.time() - start
         avg_loss = sum(losses.values())/sum(nmsks.values())
-        print("Iter %6d: loss = %.3f (variable = %.3f s, backend = %.3f s, elapsed = %.3f s)" % (i+1, avg_loss, t1-t0, backend, elapsed))
+        print("Iter %6d: loss = %.3f (frontend = %.3f s, backend = %.3f s, elapsed = %.3f s)" % (i+1, avg_loss, elapsed-backend, backend, elapsed))
         start = time.time()
 
 
@@ -79,13 +77,6 @@ def eval_loss(out_spec, preds, labels, masks, loss_fn):
 
     return losses, nmasks
 
-
-def make_variable(np_arr, requires_grad=True, volatile=False):
-    """Creates a torch.autograd.Variable from a np array."""
-    if not volatile:
-        return Variable(torch.from_numpy(np_arr.copy()), requires_grad=requires_grad).cuda()
-    else:
-        return Variable(torch.from_numpy(np_arr.copy()), volatile=True).cuda()
 
 def make_variables(sample, opt):
     """Creates the Torch variables for a sample."""

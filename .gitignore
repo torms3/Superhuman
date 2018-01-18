@@ -1,2 +1,3 @@
 .remote-sync.json
 *.pyc
+*.prof
