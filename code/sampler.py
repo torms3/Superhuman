@@ -61,21 +61,20 @@ class Sampler(object):
 
     def build_data_provider(self):
         vdp = dp.VolumeDataProvider()
-        for _, dset in self.data.iteritems():
-            vd = self.build_dataset(dset)
-            vdp.add_dataset(vd)
+        vd = self.build_dataset()
+        vdp.add_dataset(vd)
         vdp.set_sampling_weights()
         vdp.set_augmentor(self._aug())
         vdp.set_postprocessor(self._post())
         return vdp
 
-    def build_dataset(self, dset):
+    def build_dataset(self):
         # Image.
-        img = dset['img']
+        img = self.data['img']
         # Segmentation.
-        seg = dset['seg']
+        seg = self.data['seg']
         # Mask.
-        msk = dset['msk_' + self.mode]
+        msk = self.data['msk_' + self.mode]
         # Build dataset.
         vd = dp.VolumeDataset()
         vd.add_raw_data(key='input',         data=img)
@@ -145,6 +144,6 @@ if __name__ == "__main__":
         if os.path.exists(fname):
             os.remove(fname)
         f = h5py.File(fname)
-        for name, data in sample.iteritems():
+        for name, data in sample.items():
             f.create_dataset('/' + name, data=data)
         f.close()
