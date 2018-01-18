@@ -21,7 +21,7 @@ class AsyncSampler(object):
     Asynchronous sampler.
     """
     def __init__(self, sampler, queue_size=30):
-        self.q = Queue(queue_size)
+        self.q = queue.Queue(queue_size)
         self.t = Thread(target=sampler_daemon, args=(sampler, self.q))
         self.t.daemon = True
         self.t.start()
