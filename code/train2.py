@@ -34,7 +34,7 @@ def train(opt):
     print("======= BEGIN TRAINING LOOP ========")
     for i in range(opt.max_iter):
         t0 = time.time()
-        sample = fetch_sample(train_sampler, opt.batch_size)
+        sample = train_sampler()
         t1 = time.time()
         inputs, labels, masks = make_variables(sample, opt)
         t2 = time.time()
@@ -107,7 +107,7 @@ def make_variable(np_arr, requires_grad=True, volatile=False):
     else:
         return Variable(torch.from_numpy(np_arr.copy()), volatile=True).cuda()
 
-        
+
 def make_variables(sample, opt):
     """Creates the Torch variables for a sample."""
     inputs = opt.in_spec.keys()
