@@ -100,15 +100,23 @@ def fetch_sample(sampler, n=1):
     return sample
 
 
+def make_variable(np_arr, requires_grad=True, volatile=False):
+    """Creates a torch.autograd.Variable from a np array."""
+    if not volatile:
+        return Variable(torch.from_numpy(np_arr.copy()), requires_grad=requires_grad).cuda()
+    else:
+        return Variable(torch.from_numpy(np_arr.copy()), volatile=True).cuda()
+
+        
 def make_variables(sample, opt):
     """Creates the Torch variables for a sample."""
     inputs = opt.in_spec.keys()
     labels = opt.out_spec.keys()
     masks  = [l + '_mask' for l in labels]
 
-    input_vars = [utils.make_variable(sample[k], True)  for k in inputs]
-    label_vars = [utils.make_variable(sample[k], False) for k in labels]
-    mask_vars  = [utils.make_variable(sample[k], False) for k in masks]
+    input_vars = [make_variable(sample[k], True)  for k in inputs]
+    label_vars = [make_variable(sample[k], False) for k in labels]
+    mask_vars  = [make_variable(sample[k], False) for k in masks]
 
     return input_vars, label_vars, mask_vars
 
