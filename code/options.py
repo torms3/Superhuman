@@ -24,6 +24,7 @@ class BaseOptions(object):
 
         # Model spec.
         self.parser.add_argument('--fov', type=int, default=[32,160,160], nargs='+')
+        self.parser.add_argument('--depth', type=int, default=4)
 
         # Data augmentation & transform.
         self.parser.add_argument('--long_range', action='store_true')
@@ -40,7 +41,6 @@ class BaseOptions(object):
 
         # Model spec.
         opt.fov = tuple(opt.fov)
-        opt.depth = 5
         opt.in_spec = dict(input=(1,) + opt.fov)
         if opt.long_range:
             opt.out_spec = dict(affinity=(12,) + opt.fov)

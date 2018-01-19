@@ -20,12 +20,15 @@ def train(opt):
     Training.
     """
     # Create a net.
-    net = model.Model(opt.in_spec, opt.out_spec, opt.depth).cuda()
+    net = model.Model(opt.in_spec, opt.out_spec, opt.depth)
+    if opt.batch_size > 1:
+        net = torch.nn.DataParallel(net)
+    net = net.cuda()
 
     # Create a data sampler.
     sampler = get_sampler(opt)
     dataset = SNEMI3D_Dataset(sampler['train'], size=opt.max_iter)
-    dataloader = DataLoader(dataset, batch_size=1, num_workers=1, pin_memory=True)
+    dataloader = DataLoader(dataset, batch_size=opt.batch_size, num_workers=opt.batch_size, pin_memory=True)
 
     # Create an optimizer and a loss function.
     optimizer = torch.optim.Adam(net.parameters(), lr=opt.base_lr)
