@@ -48,12 +48,12 @@ def pad_size(ks, mode):
 
 
 def batchnorm(D_out):
-    i = lambda x: x
+    i = lambda x: x  # Identity.
     return nn.BatchNorm3d(D_out, eps=1e-05, momentum=0.001) if use_bn else i
 
 
 def residual_sum(x, skip):
-    i = lambda x: x
+    i = lambda x: x  # Identity.
     return x + skip if residual else i
 
 
@@ -152,7 +152,7 @@ class UpsampleMod(nn.Module):
         return self.activation(self.bn(self.conv(self.up(x)) + skip))
 
 
-class Conv1(nn.Module):
+class SingleConv(nn.Module):
     """
     Single convolution module.
     """
@@ -188,47 +188,47 @@ class Model(nn.Module):
     """
     Full model.
     """
-    def __init__(self, in_spec, out_spec, depth, **kwargs):
+    def __init__(self, in_spec, out_spec, depth):
         nn.Module.__init__(self)
 
         # Model assumes a single input.
         assert len(in_spec)==1, "model takes a single input"
+        self.in_spec = in_spec
         D_in = list(in_spec.values())[0][0]
 
+        # Model depth (# scales == depth + 1).
         assert depth < len(nfeatures)
         self.depth = depth
 
         # Input feature embedding without batchnorm.
-        self.embed_in = Conv1(D_in, embed_nin, embed_ks, st=(1,1,1))
+        self.embed_in = SingleConv(D_in, embed_nin, embed_ks, st=(1,1,1))
         D_in = embed_nin
 
         # Contracting/downsampling pathway.
         for d in range(depth):
-            fs = nfeatures[d]
-            ks = sizes[d]
+            fs, ks = nfeatures[d], sizes[d]
             self.add_conv_mod(d, D_in, fs, ks)
             self.add_max_pool(d+1, fs)
             D_in = fs
 
         # Bridge.
-        fs = nfeatures[depth]
-        ks = sizes[depth]
+        fs, ks = nfeatures[depth], sizes[depth]
         self.add_conv_mod(depth, D_in, fs, ks)
         D_in = fs
 
         # Expanding/upsampling pathway.
         for d in reversed(range(depth)):
-            fs = nfeatures[d]
-            ks = sizes[d]
+            fs, ks = nfeatures[d], sizes[d]
             self.add_upsample_mod(d, D_in, fs)
             D_in = fs
             self.add_dconv_mod(d, D_in, fs, ks)
 
         # Output feature embedding without batchnorm.
-        self.embed_out = Conv1(D_in, embed_nout, embed_ks, st=(1,1,1))
+        self.embed_out = SingleConv(D_in, embed_nout, embed_ks, st=(1,1,1))
         D_in = embed_nout
 
         # Output by spec.
+        self.out_spec = out_spec
         self.output = OutputMod(D_in, out_spec)
 
     def add_conv_mod(self, depth, D_in, D_out, ks):

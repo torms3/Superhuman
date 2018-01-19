@@ -20,6 +20,7 @@ class BaseOptions(object):
         self.parser.add_argument('--base_lr', type=float, default=0.01)
         self.parser.add_argument('--max_iter', type=int, default=1000000)
         self.parser.add_argument('--batch_size', type=int, default=1)
+        self.parser.add_argument('--num_workers', type=int, default=1)
         self.parser.add_argument('--gpu_ids', type=str, default=['0'], nargs='+')
 
         # Model spec.

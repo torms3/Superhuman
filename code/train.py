@@ -27,8 +27,14 @@ def train(opt):
 
     # Create a data sampler.
     sampler = get_sampler(opt)
-    dataset = SNEMI3D_Dataset(sampler['train'], size=opt.max_iter)
-    dataloader = DataLoader(dataset, batch_size=opt.batch_size, num_workers=opt.batch_size, pin_memory=True)
+    dataset = SNEMI3D_Dataset(sampler['train'],
+                              size=opt.max_iter * opt.batch_size,
+                              margin=opt.batch_size * opt.num_workers)
+    dataloader = DataLoader(dataset,
+                        batch_size=opt.batch_size,
+                        shuffle=False,
+                        num_workers=opt.num_workers,
+                        pin_memory=True)
 
     # Create an optimizer and a loss function.
     optimizer = torch.optim.Adam(net.parameters(), lr=opt.base_lr)
@@ -39,7 +45,7 @@ def train(opt):
     for i, sample in enumerate(dataloader):
         inputs, labels, masks = make_variables(sample, opt)
 
-        # Running forward pass.
+        # Step.
         backend = time.time()
         preds = net(*inputs)
         losses, nmsks = eval_loss(opt.out_spec, preds, labels, masks, loss_fn)
