@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 from dataset import SNEMI3D_Dataset
 import loss
-import model
+from model import Model
 from options import BaseOptions
 from sampler import get_sampler
 
@@ -37,8 +37,8 @@ def train(opt):
                         pin_memory=True)
 
     # Create an optimizer and a loss function.
-    optimizer = torch.optim.Adam(net.parameters(), lr=opt.base_lr)
-    loss_fn = loss.BinaryCrossEntropyWithLogits()
+    # optimizer = torch.optim.Adam(net.parameters(), lr=opt.base_lr)
+    # loss_fn = loss.BinaryCrossEntropyWithLogits()
 
     # Profiling.
     fend = list()
@@ -47,14 +47,16 @@ def train(opt):
     start = time.time()
     print("======= BEGIN TRAINING LOOP ========")
     for i, sample in enumerate(dataloader):
-        inputs, labels, masks = make_variables(sample, opt)
+        # inputs, labels, masks = make_variables(sample, opt)
 
         # Step.
-        backend = time.time()
-        preds = net(*inputs)
-        losses, nmsks = eval_loss(opt.out_spec, preds, labels, masks, loss_fn)
-        update_model(optimizer, losses)
-        backend = time.time() - backend
+        # backend = time.time()
+        # preds = net(*inputs)
+        # losses, nmsks = eval_loss(opt.out_spec, preds, labels, masks, loss_fn)
+        # update_model(optimizer, losses)
+        # backend = time.time() - backend
+
+        model.step(i, sample)
 
         # Elapsed time.
         elapsed  = time.time() - start
