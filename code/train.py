@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 from dataset import SNEMI3D_Dataset
 import loss
-import model
+from model import Model
 from options import BaseOptions
 from sampler import get_sampler
 
@@ -20,10 +20,11 @@ def train(opt):
     Training.
     """
     # Create a net.
-    net = model.Model(opt.in_spec, opt.out_spec, opt.depth)
-    if opt.batch_size > 1:
-        net = torch.nn.DataParallel(net)
-    net = net.cuda()
+    # net = model.Model(opt.in_spec, opt.out_spec, opt.depth)
+    # if opt.batch_size > 1:
+    #     net = torch.nn.DataParallel(net)
+    # net = net.cuda()
+    model = Model(opt)
 
     # Create a data sampler.
     sampler = get_sampler(opt)
@@ -37,26 +38,37 @@ def train(opt):
                         pin_memory=True)
 
     # Create an optimizer and a loss function.
-    optimizer = torch.optim.Adam(net.parameters(), lr=opt.base_lr)
-    loss_fn = loss.BinaryCrossEntropyWithLogits()
+    # optimizer = torch.optim.Adam(net.parameters(), lr=opt.base_lr)
+    # loss_fn = loss.BinaryCrossEntropyWithLogits()
 
-    start = time.time()
+    # Profiling.
+    fend = list()
+    bend = list()
+
+    # start = time.time()
     print("======= BEGIN TRAINING LOOP ========")
     for i, sample in enumerate(dataloader):
-        inputs, labels, masks = make_variables(sample, opt)
+        # inputs, labels, masks = make_variables(sample, opt)
 
         # Step.
-        backend = time.time()
-        preds = net(*inputs)
-        losses, nmsks = eval_loss(opt.out_spec, preds, labels, masks, loss_fn)
-        update_model(optimizer, losses)
-        backend = time.time() - backend
+        # backend = time.time()
+        # preds = net(*inputs)
+        # losses, nmsks = eval_loss(opt.out_spec, preds, labels, masks, loss_fn)
+        # update_model(optimizer, losses)
+        # backend = time.time() - backend
+
+        model.step(i, sample)
 
         # Elapsed time.
-        elapsed  = time.time() - start
-        avg_loss = sum(losses.values())/sum(nmsks.values())
-        print("Iter %6d: loss = %.3f (frontend = %.3f s, backend = %.3f s, elapsed = %.3f s)" % (i+1, avg_loss, elapsed-backend, backend, elapsed))
-        start = time.time()
+        # elapsed  = time.time() - start
+        # fend.append(elapsed - backend)
+        # bend.append(backend)
+        # avg_loss = sum(losses.values())/sum(nmsks.values())
+        # print("Iter %6d: loss = %.3f (frontend = %.3f s, backend = %.3f s, elapsed = %.3f s)" % (i+1, avg_loss, fend[i], bend[i], elapsed))
+        # start = time.time()
+
+    # n = opt.max_iter - 10
+    # print("n = %d, frontend = %.3f s, backend = %.3f s" % (n, sum(fend[-n:])/n, sum(bend[-n:])/n))
 
 
 def update_model(optimizer, losses):
