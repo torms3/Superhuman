@@ -19,8 +19,6 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from utils import _triple
-
 
 # Number of feature maps.
 nfeatures = [24,32,48,72,104,144]
@@ -192,7 +190,7 @@ class EmbeddingMod(nn.Module):
     """
     def __init__(self, in_channels, out_channels, kernel_size,
                  activation=F.elu):
-        super(Conv1Mod, self).__init__()
+        super(EmbeddingMod, self).__init__()
         pad = pad_size(kernel_size, 'same')
         self.conv = Conv(in_channels, out_channels, kernel_size,
                          stride=1, padding=pad, bias=True)

@@ -20,7 +20,7 @@ def train(opt):
     Training.
     """
     # Create a net.
-    net = model.Model(opt.in_spec, opt.out_spec, opt.depth)
+    net = model.RSUNet(opt.in_spec, opt.out_spec, opt.depth)
     if opt.batch_size > 1:
         net = torch.nn.DataParallel(net)
     net = net.cuda()
