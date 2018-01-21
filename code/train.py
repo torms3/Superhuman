@@ -40,6 +40,10 @@ def train(opt):
     optimizer = torch.optim.Adam(net.parameters(), lr=opt.base_lr)
     loss_fn = loss.BinaryCrossEntropyWithLogits()
 
+    # Profiling.
+    fend = list()
+    bend = list()
+
     start = time.time()
     print("======= BEGIN TRAINING LOOP ========")
     for i, sample in enumerate(dataloader):
@@ -54,9 +58,16 @@ def train(opt):
 
         # Elapsed time.
         elapsed  = time.time() - start
+        fend.append(elapsed - backend)
+        bend.append(backend)
+
+        # Display.
         avg_loss = sum(losses.values())/sum(nmsks.values())
-        print("Iter %6d: loss = %.3f (frontend = %.3f s, backend = %.3f s, elapsed = %.3f s)" % (i+1, avg_loss, elapsed-backend, backend, elapsed))
+        print("Iter %6d: loss = %.3f (frontend = %.3f s, backend = %.3f s, elapsed = %.3f s)" % (i+1, avg_loss, fend[i], bend[i], elapsed))
         start = time.time()
+
+    n = opt.max_iter - 10
+    print("n = %d, frontend = %.3f s, backend = %.3f s" % (n, sum(fend[-n:])/n, sum(bend[-n:])/n))
 
 
 def update_model(optimizer, losses):
