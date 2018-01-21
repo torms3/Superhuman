@@ -9,8 +9,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
 from dataset import SNEMI3D_Dataset
-import loss
-from model import Model
+import model
 from options import BaseOptions
 from sampler import get_sampler
 
@@ -19,8 +18,8 @@ def train(opt):
     """
     Training.
     """
-    # Create a net.
-    net = model.RSUNet(opt.in_spec, opt.out_spec, opt.depth)
+    # Create a model.
+    net = model.TrainModel(opt)
     if opt.batch_size > 1:
         net = torch.nn.DataParallel(net)
     net = net.cuda()
@@ -36,9 +35,8 @@ def train(opt):
                         num_workers=opt.num_workers,
                         pin_memory=True)
 
-    # Create an optimizer and a loss function.
-    # optimizer = torch.optim.Adam(net.parameters(), lr=opt.base_lr)
-    # loss_fn = loss.BinaryCrossEntropyWithLogits()
+    # Create an optimizer.
+    optimizer = torch.optim.Adam(net.parameters(), lr=opt.base_lr)
 
     # Profiling.
     fend = list()
@@ -47,16 +45,14 @@ def train(opt):
     start = time.time()
     print("======= BEGIN TRAINING LOOP ========")
     for i, sample in enumerate(dataloader):
-        # inputs, labels, masks = make_variables(sample, opt)
+        sample = make_variables(sample, opt)
 
-        # Step.
-        # backend = time.time()
-        # preds = net(*inputs)
-        # losses, nmsks = eval_loss(opt.out_spec, preds, labels, masks, loss_fn)
-        # update_model(optimizer, losses)
-        # backend = time.time() - backend
-
-        model.step(i, sample)
+        backend = time.time()
+        optimizer.zero_grad()
+        loss = net(sample).sum()
+        loss.backward()
+        optimizer.step()
+        backend = time.time() - backend
 
         # Elapsed time.
         elapsed  = time.time() - start
@@ -64,53 +60,26 @@ def train(opt):
         bend.append(backend)
 
         # Display.
-        avg_loss = sum(losses.values())/sum(nmsks.values())
-        print("Iter %6d: loss = %.3f (frontend = %.3f s, backend = %.3f s, elapsed = %.3f s)" % (i+1, avg_loss, fend[i], bend[i], elapsed))
+        print("Iter %6d: loss = %.3f (frontend = %.3f s, backend = %.3f s, elapsed = %.3f s)" % (i+1, loss, fend[i], bend[i], elapsed))
         start = time.time()
 
     n = opt.max_iter - 10
     print("n = %d, frontend = %.3f s, backend = %.3f s" % (n, sum(fend[-n:])/n, sum(bend[-n:])/n))
 
 
-def update_model(optimizer, losses):
-    """Runs the backward pass and updates model parameters."""
-    optimizer.zero_grad()
-    total_loss = sum(losses.values())
-    total_loss.backward()
-    optimizer.step()
-
-
-def eval_loss(out_spec, preds, labels, masks, loss_fn):
-    """
-    Evaluates the error of the predictions according to the available
-    labels and masks.
-
-    Assumes labels are ordered according to the sample_spec.
-    """
-    assert len(masks) == len(labels), "Mismatched masks and labels"
-    assert len(preds) == len(labels), "Mismatched preds and labels"
-
-    losses = dict()
-    nmasks = dict()
-
-    for i, k in enumerate(out_spec.keys()):
-        losses[k] = loss_fn(preds[i], labels[i], masks[i])
-        nmasks[k] = masks[i].sum()
-
-    return losses, nmasks
-
-
 def make_variables(sample, opt):
-    """Creates the Torch variables for a sample."""
-    inputs = opt.in_spec.keys()
-    labels = opt.out_spec.keys()
-    masks  = [l + '_mask' for l in labels]
-
-    input_vars = [Variable(sample[k], requires_grad=True).cuda() for k in inputs]
-    label_vars = [Variable(sample[k], requires_grad=False).cuda(async=True) for k in labels]
-    mask_vars  = [Variable(sample[k], requires_grad=False).cuda(async=True) for k in masks]
-
-    return input_vars, label_vars, mask_vars
+    # Inputs.
+    for k in opt.in_spec:
+        sample[k] = Variable(sample[k], requires_grad=True).cuda()
+    # Labels.
+    for k in opt.out_spec:
+        sample[k] = Variable(sample[k], requires_grad=False).cuda(async=True)
+    # Masks.
+    for k in opt.out_spec:
+        k +='_mask'
+        assert k in sample
+        sample[k] = Variable(sample[k], requires_grad=False).cuda(async=True)
+    return sample
 
 
 if __name__ == "__main__":
