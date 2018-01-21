@@ -6,7 +6,7 @@ Symmetric 3D U-Net.
 (Optional)
 Residual skip connections.
 
-Kisuk Lee <kisuklee@mit.edu>, 2017
+Kisuk Lee <kisuklee@mit.edu>, 2017-2018
 Nicholas Turner <nturner@cs.princeton.edu>, 2017
 """
 

@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+from collections import OrderedDict
 import time
 
 import torch
@@ -37,11 +38,11 @@ class TrainModel(RSUNet):
         return self.eval_loss(preds, sample)
 
     def eval_loss(self, preds, sample):
-        self.loss = dict()
-        self.nmsk = dict()
+        self.loss = OrderedDict()
+        self.nmsk = OrderedDict()
         for i, k in enumerate(self.out_spec):
             label = sample[k]
             mask  = sample[k + '_mask']
             self.loss[k] = self.loss_fn(preds[i], label, mask)
             self.nmsk[k] = mask.sum()
-        return sum(self.loss.values())
+        return (self.loss.values(), self.nmsk.values())
