@@ -23,7 +23,7 @@ def train(opt):
     monitor = LearningMonitor()
     if opt.chkpt_num > 0:
         net, monitor = load_chkpt(net, monitor, opt)
-    model = torch.nn.DataParallel(net) if opt.batch_size > 1 else net
+    model = torch.nn.DataParallel(net) if len(opt.gpu_ids) > 1 else net
     model = model.cuda()
     model.train()
 
@@ -48,7 +48,7 @@ def train(opt):
         backend = time.time()
         optimizer.zero_grad()
         losses, nmasks = model(sample)
-        loss = sum([l.sum() for l in losses])
+        loss = sum([l.mean() for l in losses])
         loss.backward()
         optimizer.step()
         backend = time.time() - backend
@@ -58,8 +58,8 @@ def train(opt):
 
         # Record keeping.
         keys = sorted(opt.out_spec)
-        loss = {k: losses[i].sum().data[0] for i, k in enumerate(keys)}
-        nmsk = {k: nmasks[i].sum().data[0] for i, k in enumerate(keys)}
+        loss = {k: losses[i].mean().data[0] for i, k in enumerate(keys)}
+        nmsk = {k: nmasks[i].mean().data[0] for i, k in enumerate(keys)}
         monitoring(monitor, 'train', loss, nmsk,
                    backend=backend, elapsed=elapsed)
         loss = {k: loss[k]/nmsk[k] for k in loss}
@@ -102,8 +102,8 @@ def validation(iter_num, model, dataiter, opt, monitor, writer):
             elapsed = time.time() - start
             # Monitoring.
             keys = sorted(opt.out_spec)
-            loss = {k: losses[i].sum().data[0] for i, k in enumerate(keys)}
-            nmsk = {k: nmasks[i].sum().data[0] for i, k in enumerate(keys)}
+            loss = {k: losses[i].mean().data[0] for i, k in enumerate(keys)}
+            nmsk = {k: nmasks[i].mean().data[0] for i, k in enumerate(keys)}
             monitoring(monitor, 'test', loss, nmsk,
                        backend=backend, elapsed=elapsed)
             # Restart timer.
