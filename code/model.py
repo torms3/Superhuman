@@ -25,7 +25,7 @@ class TrainNet(RSUNet):
     def forward(self, sample):
         """Runs forward pass and computes loss."""
         # Forward pass.
-        inputs = [sample[k] for k in self.in_spec]
+        inputs = [sample[k] for k in sorted(self.in_spec)]
         preds = super(TrainNet, self).forward(*inputs)
         # Evaluates loss.
         return self.eval_loss(preds, sample)
@@ -61,7 +61,7 @@ class InferenceNet(RSUNet):
         # Forward pass.
         inputs = [sample[k] for k in self.in_spec]
         preds = super(InferenceNet, self).forward(*inputs)
-        return [self.activation(preds[i]) for i, _ in enumerate(self.out_spec)]
+        return [self.activation(x) for x in preds]
 
     def load(self, fpath):
         super(InferenceNet, self).load_state_dict(torch.load(fpath))
