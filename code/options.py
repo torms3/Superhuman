@@ -24,8 +24,11 @@ class BaseOptions(object):
         self.parser.add_argument('--gpu_ids', type=str, default=['0'], nargs='+')
         self.parser.add_argument('--test_intv', type=int, default=1000)
         self.parser.add_argument('--test_iter', type=int, default=100)
-        self.parser.add_argument('--checkpoint', type=int, default=10000)
-        
+        self.parser.add_argument('--avgs_intv', type=int, default=50)
+        self.parser.add_argument('--warm_up', type=int, default=50)
+        self.parser.add_argument('--chkpt_intv', type=int, default=10000)
+        self.parser.add_argument('--chkpt_num', type=int, default=0)
+
         # Model spec.
         self.parser.add_argument('--fov', type=int, default=[32,160,160], nargs='+')
         self.parser.add_argument('--depth', type=int, default=4)

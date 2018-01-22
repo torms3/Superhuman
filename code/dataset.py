@@ -16,6 +16,8 @@ class SNEMI3D_Dataset(Dataset):
         self.size = size
         self.seeded = False
         self.margin = margin
+        # Seeding.
+        self.rng = np.random.RandomState()
 
     def __len__(self):
         return self.size
@@ -24,7 +26,7 @@ class SNEMI3D_Dataset(Dataset):
         if not self.seeded:
             assert idx < self.margin
             high = 2**32 - self.margin
-            seed = np.random.randint(high) + idx
+            seed = self.rng.randint(high) + idx
             print("idx = {}, seed = {}".format(idx, seed))
             np.random.seed(seed)
             self.seeded = True
