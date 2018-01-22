@@ -71,3 +71,54 @@ class BaseOptions(object):
 
         self.opt = opt
         return self.opt
+
+
+class TestOptions(object):
+    """
+    Test options.
+    """
+    def __init__(self):
+        self.parser = argparse.ArgumentParser()
+        self.initialized = False
+
+    def initialize(self):
+        self.parser.add_argument('--data_dir', required=True)
+        self.parser.add_argument('--exp_name', required=True)
+        self.parser.add_argument('--gpu_ids', type=str, default=['0'], nargs='+')
+
+        # Model spec.
+        self.parser.add_argument('--fov', type=int, default=[32,160,160], nargs='+')
+        self.parser.add_argument('--depth', type=int, default=4)
+
+        self.initialized = True
+
+    def parse(self):
+        if not self.initialized:
+            self.initialize()
+        opt = self.parser.parse_args()
+
+        # Model spec.
+        opt.fov = tuple(opt.fov)
+        opt.in_spec = dict(input=(1,) + opt.fov)
+        if opt.long_range:
+            opt.out_spec = dict(affinity=(12,) + opt.fov)
+        else:
+            opt.out_spec = dict(affinity=(3,) + opt.fov)
+
+        # Scan spec.
+        opt.scan_spec = dict(affinity=(3,) + opt.fov)
+        opt.scan_params = dict(stride=(0.5,0,5,0.5), blend='bump')
+
+        # Directories.
+        opt.exp_dir = 'experiments/{}'.format(opt.exp_name)
+        opt.fwd_dir = os.path.join(opt.exp_dir, 'forward')
+
+        args = vars(opt)
+
+        print('------------ Options -------------')
+        for k, v in sorted(args.items()):
+            print('%s: %s' % (str(k), str(v)))
+        print('-------------- End ----------------')
+
+        self.opt = opt
+        return self.opt
