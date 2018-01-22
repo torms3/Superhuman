@@ -13,5 +13,4 @@ class BinaryCrossEntropyWithLogits(nn.Module):
     def forward(self, input, target, mask=None):
         # By setting size_average=False,
         # we compute loss.sum() rather than loss.mean().
-        return F.binary_cross_entropy_with_logits(input, target,
-            weight=mask, size_average=False)
+        return F.binary_cross_entropy_with_logits(input, target, weight=mask)

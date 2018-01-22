@@ -36,7 +36,7 @@ class TrainNet(RSUNet):
             label = sample[k]
             mask = sample[k+'_mask'] if k+'_mask' in sample else None
             self.loss[k] = self.loss_fn(preds[i], label, mask)
-            self.nmsk[k] = mask.sum()
+            self.nmsk[k] = mask.mean()
         return (self.loss.values(), self.nmsk.values())
 
     def save(self, fpath):
