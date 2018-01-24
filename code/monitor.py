@@ -102,7 +102,7 @@ class LearningMonitor:
             nums[k], denoms[k] = 0.0, 0.0
 
     ####################################################################
-    ## Non-interface functions
+    ## Non-interface functions.
     ####################################################################
 
     def _add_to_avg(self, data, numerators, phase):

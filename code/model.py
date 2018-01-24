@@ -58,9 +58,7 @@ class InferenceNet(RSUNet):
         self.activation = F.sigmoid
 
     def forward(self, x):
-        # Forward pass.
-        inputs = [sample[k] for k in self.in_spec]
-        preds = super(InferenceNet, self).forward(*inputs)
+        preds = super(InferenceNet, self).forward(x)
         return [self.activation(x) for x in preds]
 
     def load(self, fpath):
