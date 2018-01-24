@@ -55,6 +55,7 @@ class InferenceNet(RSUNet):
         super(InferenceNet, self).__init__(opt.in_spec, opt.out_spec, opt.depth)
         self.in_spec = opt.in_spec
         self.out_spec = opt.out_spec
+        self.scan_spec = opt.scan_spec
         self.activation = F.sigmoid
 
     def forward(self, x):

@@ -30,7 +30,7 @@ class Forward(object):
                 inputs = self._make_variables(inputs)
                 # Forward pass.
                 outputs = self.net(*inputs)
-                self._push_outputs(scanner, outputs)
+                scanner.push(self._extract_data(outputs))
                 # Elapsed time.
                 elapsed = time.time() - start
                 print("Elapsed: %.3f" % elapsed)
@@ -47,12 +47,11 @@ class Forward(object):
             inputs.append(Variable(tensor, requires_grad=False).cuda())
         return inputs
 
-    def _push_outputs(self, scanner, outputs):
+    def _extract_data(self, outputs):
         outs = dict()
         for i, k in enumerate(sorted(self.opt.out_spec)):
             if k in self.opt.scan_spec:
-                outs[k] = self._extract_data(outputs[i])
-        scanner.push(outs)
-
-    def _extract_data(self, expanded_variable):
-        return np.squeeze(expanded_variable.data.cpu().numpy(), axis=(0,))
+                scan_channels = self.opt.scan_spec[k][-4]
+                narrowed = outputs[i].data.narrow(1, 0, scan_channels)
+                outs[k] = np.squeeze(narrowed.cpu().numpy(), axis=(0,))
+        return outs
