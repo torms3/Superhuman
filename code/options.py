@@ -84,13 +84,18 @@ class TestOptions(object):
         self.initialized = False
 
     def initialize(self):
-        self.parser.add_argument('--data_dir', required=True)
         self.parser.add_argument('--exp_name', required=True)
+        self.parser.add_argument('--data_dir', required=True)
+        self.parser.add_argument('--data_names', nargs='+')
+        self.parser.add_argument('--data_tag', default="SNEMI3D_")
         self.parser.add_argument('--gpu_ids', type=str, default=['0'], nargs='+')
+        self.parser.add_argument('--chkpt_num', type=int, default=0)
+        self.parser.add_argument('--no_eval', action='store_true')
 
         # Model spec.
         self.parser.add_argument('--fov', type=int, default=[32,160,160], nargs='+')
         self.parser.add_argument('--depth', type=int, default=4)
+        self.parser.add_argument('--long_range', action='store_true')
 
         self.initialized = True
 
@@ -102,17 +107,16 @@ class TestOptions(object):
         # Model spec.
         opt.fov = tuple(opt.fov)
         opt.in_spec = dict(input=(1,) + opt.fov)
-        if opt.long_range:
-            opt.out_spec = dict(affinity=(12,) + opt.fov)
-        else:
-            opt.out_spec = dict(affinity=(3,) + opt.fov)
+        output_channels = 12 if opt.long_range else 3
+        opt.out_spec = dict(affinity=(output_channels,) + opt.fov)
 
         # Scan spec.
-        opt.scan_spec = dict(affinity=(3,) + opt.fov)
-        opt.scan_params = dict(stride=(0.5,0,5,0.5), blend='bump')
+        opt.scan_spec = dict(affinity=(output_channels,) + opt.fov)
+        opt.scan_params = dict(stride=(0.5,0.5,0.5), blend='bump')
 
         # Directories.
         opt.exp_dir = 'experiments/{}'.format(opt.exp_name)
+        opt.model_dir = os.path.join(opt.exp_dir, 'models')
         opt.fwd_dir = os.path.join(opt.exp_dir, 'forward')
 
         args = vars(opt)
