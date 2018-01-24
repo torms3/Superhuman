@@ -23,6 +23,7 @@ class Forward(object):
     ####################################################################
 
     def _scan(self, scanner):
+        elapsed = list()
         with torch.no_grad():
             start = time.time()
             inputs = scanner.pull()
@@ -32,11 +33,13 @@ class Forward(object):
                 outputs = self.net(*inputs)
                 scanner.push(self._extract_data(outputs))
                 # Elapsed time.
-                elapsed = time.time() - start
-                print("Elapsed: %.3f" % elapsed)
+                elapsed.append(time.time() - start)
+                print("Elapsed: %.3f s" % elapsed[-1])
                 start = time.time()
                 # Fetch next inputs.
                 inputs = scanner.pull()
+        print("Elapsed: %.3f s/patch" % (sum(elapsed)/len(elapsed)))
+        print("Throughput: %d voxel/s" % round(scanner.voxels()/sum(elapsed)))
         return scanner.outputs
 
     def _make_variables(self, sample):
