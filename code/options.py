@@ -28,6 +28,7 @@ class BaseOptions(object):
         self.parser.add_argument('--warm_up', type=int, default=50)
         self.parser.add_argument('--chkpt_intv', type=int, default=10000)
         self.parser.add_argument('--chkpt_num', type=int, default=0)
+        self.parser.add_argument('--no_eval', action='store_true')
 
         # Model spec.
         self.parser.add_argument('--fov', type=int, default=[32,160,160], nargs='+')
