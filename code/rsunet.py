@@ -58,9 +58,9 @@ def pad_size(kernel_size, mode):
     return pad
 
 
-def batchnorm(out_channels, use_bn):
+def batchnorm(out_channels, use_bn, momentum=0.001):
     if use_bn:
-        layer = nn.BatchNorm3d(out_channels, eps=1e-05, momentum=0.001)
+        layer = nn.BatchNorm3d(out_channels, eps=1e-05, momentum=momentum)
     else:
         layer = lambda x: x
     return layer
@@ -111,7 +111,8 @@ class ConvMod(nn.Module):
     Convolution module.
     """
     def __init__(self, in_channels, out_channels, kernel_size,
-                 activation=F.elu, residual=True, use_bn=True):
+                 activation=F.elu, residual=True, use_bn=True,
+                 momentum=0.001):
         super(ConvMod, self).__init__()
         # Convolution params.
         ks = _triple(kernel_size)
@@ -123,9 +124,9 @@ class ConvMod(nn.Module):
         self.conv2 = Conv(out_channels, out_channels, ks, st, pad, bias)
         self.conv3 = Conv(out_channels, out_channels, ks, st, pad, bias)
         # BatchNorm.
-        self.bn1 = batchnorm(out_channels, use_bn)
-        self.bn2 = batchnorm(out_channels, use_bn)
-        self.bn3 = batchnorm(out_channels, use_bn)
+        self.bn1 = batchnorm(out_channels, use_bn, momentum=momentum)
+        self.bn2 = batchnorm(out_channels, use_bn, momentum=momentum)
+        self.bn3 = batchnorm(out_channels, use_bn, momentum=momentum)
         # Activation function.
         self.activation = activation
         # Residual skip connection.
@@ -153,7 +154,7 @@ class UpsampleMod(nn.Module):
     Transposed Convolution module.
     """
     def __init__(self, in_channels, out_channels, up=(1,2,2), mode='bilinear',
-                 activation=F.elu, use_bn=True):
+                 activation=F.elu, use_bn=True, momentum=0.001):
         super(UpsampleMod, self).__init__()
         # Convolution params.
         ks = (1,1,1)
@@ -174,7 +175,7 @@ class UpsampleMod(nn.Module):
         else:
             assert False, "unknown upsampling mode {}".format(mode)
         # BatchNorm and activation.
-        self.bn = batchnorm(out_channels, use_bn)
+        self.bn = batchnorm(out_channels, use_bn, momentum=momentum)
         self.activation = activation
 
     def forward(self, x, skip):
@@ -241,6 +242,7 @@ class RSUNet(nn.Module):
         upsample (string, optional): Upsampling mode in
             ['bilinear', 'nearest', 'transpose']
         use_bn (bool, optional): Use batch normalization?
+        momentum (float, optional): Momentum for batch normalization.
 
     Example:
         >>> in_spec  = {'input':(1,32,160,160)}
@@ -248,11 +250,13 @@ class RSUNet(nn.Module):
         >>> model = RSUNet(in_spec, out_spec, depth=4)
     """
     def __init__(self, in_spec, out_spec, depth,
-                 residual=True, upsample='bilinear', use_bn=True):
+                 residual=True, upsample='bilinear', use_bn=True,
+                 momentum=0.001):
         super(RSUNet, self).__init__()
         self.residual = residual
         self.upsample = upsample
         self.use_bn   = use_bn
+        self.momentum = momentum
 
         # Model assumes a single input.
         assert len(in_spec) == 1, "model takes a single input"
@@ -297,13 +301,15 @@ class RSUNet(nn.Module):
     def add_conv_mod(self, depth, in_channels, out_channels, kernel_size):
         name = 'convmod{}'.format(depth)
         module = ConvMod(in_channels, out_channels, kernel_size,
-                         residual=self.residual, use_bn=self.use_bn)
+                         residual=self.residual, use_bn=self.use_bn,
+                         momentum=self.momentum)
         self.add_module(name, module)
 
     def add_dconv_mod(self, depth, in_channels, out_channels, kernel_size):
         name = 'dconvmod{}'.format(depth)
         module = ConvMod(in_channels, out_channels, kernel_size,
-                         residual=self.residual, use_bn=self.use_bn)
+                         residual=self.residual, use_bn=self.use_bn,
+                         momentum=self.momentum))
         self.add_module(name, module)
 
     def add_max_pool(self, depth, in_channels, down=(1,2,2)):
@@ -314,7 +320,8 @@ class RSUNet(nn.Module):
     def add_upsample_mod(self, depth, in_channels, out_channels, up=(1,2,2)):
         name = 'upsample{}'.format(depth)
         module = UpsampleMod(in_channels, out_channels, up=up,
-                             mode=self.upsample, use_bn=self.use_bn)
+                             mode=self.upsample, use_bn=self.use_bn,
+                             momentum=self.momentum))
         self.add_module(name, module)
 
     def forward(self, x):
