@@ -309,7 +309,7 @@ class RSUNet(nn.Module):
         name = 'dconvmod{}'.format(depth)
         module = ConvMod(in_channels, out_channels, kernel_size,
                          residual=self.residual, use_bn=self.use_bn,
-                         momentum=self.momentum))
+                         momentum=self.momentum)
         self.add_module(name, module)
 
     def add_max_pool(self, depth, in_channels, down=(1,2,2)):
@@ -321,7 +321,7 @@ class RSUNet(nn.Module):
         name = 'upsample{}'.format(depth)
         module = UpsampleMod(in_channels, out_channels, up=up,
                              mode=self.upsample, use_bn=self.use_bn,
-                             momentum=self.momentum))
+                             momentum=self.momentum)
         self.add_module(name, module)
 
     def forward(self, x):
