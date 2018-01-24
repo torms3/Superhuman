@@ -85,7 +85,7 @@ def train(opt):
 
 def validation(iter_num, model, dataiter, opt, monitor, writer):
     # Train -> eval mode.
-    if not opt.no_eval
+    if not opt.no_eval:
         model.eval()
 
     # Runs validation loop.
