@@ -50,7 +50,9 @@ def make_forward_scanner(data_name, opt):
 def save_output(data_name, output, opt):
     for k in output.data:
         data = output.get_data(k)
-        base_name = "{}{}_{}_{}.h5".format(opt.data_tag, data_name, k, opt.chkpt_num)
+        prefix = "" if not opt.data_prefix else opt.data_prefix + '_'
+        tag = "" if not opt.data_tag else '_' + opt.data_tag
+        base_name = "{}{}_{}_{}{}.h5".format(prefix, data_name, k, opt.chkpt_num, tag)
         full_name = os.path.join(opt.fwd_dir, base_name)
         emio.imsave(data, full_name)
 
