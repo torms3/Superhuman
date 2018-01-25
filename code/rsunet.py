@@ -60,6 +60,7 @@ def pad_size(kernel_size, mode):
 
 def batchnorm(out_channels, use_bn, momentum=0.001):
     if use_bn:
+        print("batchnorm momentum = {}".format(momentum))
         layer = nn.BatchNorm3d(out_channels, eps=1e-05, momentum=momentum)
     else:
         layer = lambda x: x
