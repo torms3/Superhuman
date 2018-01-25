@@ -18,7 +18,7 @@ class TrainNet(RSUNet):
     """
     def __init__(self, opt):
         super(TrainNet, self).__init__(opt.in_spec, opt.out_spec, opt.depth,
-                                       opt.momentum)
+                                       momentum=opt.momentum)
         self.in_spec = opt.in_spec
         self.out_spec = opt.out_spec
         self.loss_fn = loss.BinaryCrossEntropyWithLogits()
