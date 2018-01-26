@@ -15,7 +15,7 @@ class LearningMonitor:
     """
     LearningMonitor - a record keeping class for training
     neural networks, including functionality for maintaining
-    running averages
+    running averages.
     """
     def __init__(self, fname=None):
         if fname is None:

@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 from tensorboardX import SummaryWriter
 
-from dataset import SNEMI3D_Dataset
+from dataset import SNEMI3D_Dataset, worker_init_fn
 from model import TrainNet
 from monitor import LearningMonitor
 from options import BaseOptions
@@ -180,23 +180,23 @@ def prepare_data(opt):
     dataset_size = (opt.max_iter - opt.chkpt_num) * opt.batch_size
     dataset = dict()
     dataset['train'] = SNEMI3D_Dataset(sampler['train'],
-                            size=dataset_size,
-                            margin=opt.batch_size * opt.num_workers)
+                                       size=dataset_size)
     dataset['test'] = SNEMI3D_Dataset(sampler['val'],
-                          size=dataset_size,
-                          margin=opt.batch_size * opt.num_workers)
+                                      size=dataset_size)
     # DataLoader.
     dataloader = dict()
     dataloader['train'] = DataLoader(dataset['train'],
                               batch_size=opt.batch_size,
                               shuffle=False,
                               num_workers=opt.num_workers,
-                              pin_memory=True)
+                              pin_memory=True,
+                              worker_init_fn=worker_init_fn)
     dataloader['test'] = DataLoader(dataset['test'],
                             batch_size=opt.batch_size,
                             shuffle=False,
                             num_workers=opt.num_workers,
-                            pin_memory=True)
+                            pin_memory=True,
+                            worker_init_fn=worker_init_fn)
     # DataLoader iterator.
     dataiter = dict()
     dataiter['train'] = iter(dataloader['train'])
