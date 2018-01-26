@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 from tensorboardX import SummaryWriter
 
-from dataset import SNEMI3D_Dataset
+from dataset3 import SNEMI3D_Dataset
 from model import TrainNet
 from monitor import LearningMonitor
 from options import BaseOptions
