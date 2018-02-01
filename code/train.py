@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 from tensorboardX import SummaryWriter
 
-from dataset import SNEMI3D_Dataset, worker_init_fn
+from dataset3 import SNEMI3D_Dataset
 from model import TrainNet
 from monitor import LearningMonitor
 from options import BaseOptions
@@ -85,33 +85,32 @@ def train(opt):
 
 def validation(iter_num, model, dataiter, opt, monitor, writer):
     # Train -> eval mode.
-    # model.eval()
+    if not opt.no_eval:
+        model.eval()
 
-    with torch.no_grad():
-
-        # Runs validation loop.
-        print("---------- BEGIN VALIDATION LOOP ----------")
+    # Runs validation loop.
+    print("---------- BEGIN VALIDATION LOOP ----------")
+    start = time.time()
+    for i in range(opt.test_iter):
+        sample = make_variables(next(dataiter), opt, phase='test')
+        # Forward pass.
+        backend = time.time()
+        losses, nmasks = model(sample)
+        backend = time.time() - backend
+        # Elapsed time.
+        elapsed = time.time() - start
+        # Monitoring.
+        keys = sorted(opt.out_spec)
+        loss = {k: losses[i].mean().data[0] for i, k in enumerate(keys)}
+        nmsk = {k: nmasks[i].mean().data[0] for i, k in enumerate(keys)}
+        monitoring(monitor, 'test', loss, nmsk,
+                   backend=backend, elapsed=elapsed)
+        # Restart timer.
         start = time.time()
-        for i in range(opt.test_iter):
-            sample = make_variables(next(dataiter), opt, phase='test')
-            # Forward pass.
-            backend = time.time()
-            losses, nmasks = model(sample)
-            backend = time.time() - backend
-            # Elapsed time.
-            elapsed = time.time() - start
-            # Monitoring.
-            keys = sorted(opt.out_spec)
-            loss = {k: losses[i].mean().data[0] for i, k in enumerate(keys)}
-            nmsk = {k: nmasks[i].mean().data[0] for i, k in enumerate(keys)}
-            monitoring(monitor, 'test', loss, nmsk,
-                       backend=backend, elapsed=elapsed)
-            # Restart timer.
-            start = time.time()
 
-        # Averaging & dispalying.
-        average_stats(iter_num, monitor, opt, 'test', writer=writer)
-        print("-------------------------------------------")
+    # Averaging & dispalying.
+    average_stats(iter_num, monitor, opt, 'test', writer=writer)
+    print("-------------------------------------------")
 
     # Eval -> train mode.
     model.train()
@@ -160,9 +159,10 @@ def average_stats(iter_num, monitor, opt, phase, writer=None):
 def make_variables(sample, opt, phase):
     assert phase in ['train','test']
     requires_grad = (phase == 'train')
+    volatile = (phase == 'test')
     # Inputs.
     for k in opt.in_spec:
-        sample[k] = Variable(sample[k], requires_grad=requires_grad).cuda()
+        sample[k] = Variable(sample[k], requires_grad=requires_grad, volatile=volatile).cuda()
     # Labels.
     for k in opt.out_spec:
         sample[k] = Variable(sample[k], requires_grad=False).cuda(async=True)
@@ -180,23 +180,23 @@ def prepare_data(opt):
     dataset_size = (opt.max_iter - opt.chkpt_num) * opt.batch_size
     dataset = dict()
     dataset['train'] = SNEMI3D_Dataset(sampler['train'],
-                                       size=dataset_size)
+                            size=dataset_size,
+                            margin=opt.batch_size * opt.num_workers)
     dataset['test'] = SNEMI3D_Dataset(sampler['val'],
-                                      size=dataset_size)
+                          size=dataset_size,
+                          margin=opt.batch_size * opt.num_workers)
     # DataLoader.
     dataloader = dict()
     dataloader['train'] = DataLoader(dataset['train'],
                               batch_size=opt.batch_size,
                               shuffle=False,
                               num_workers=opt.num_workers,
-                              pin_memory=True,
-                              worker_init_fn=worker_init_fn)
+                              pin_memory=True)
     dataloader['test'] = DataLoader(dataset['test'],
                             batch_size=opt.batch_size,
                             shuffle=False,
                             num_workers=opt.num_workers,
-                            pin_memory=True,
-                            worker_init_fn=worker_init_fn)
+                            pin_memory=True)
     # DataLoader iterator.
     dataiter = dict()
     dataiter['train'] = iter(dataloader['train'])
