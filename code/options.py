@@ -96,7 +96,7 @@ class TestOptions(object):
         # Model spec.
         self.parser.add_argument('--fov', type=int, default=[32,160,160], nargs='+')
         self.parser.add_argument('--depth', type=int, default=4)
-        self.parser.add_argument('--long_range', action='store_true')
+        self.parser.add_argument('--out_channels', type=int, default=3)
 
         self.initialized = True
 
@@ -108,8 +108,7 @@ class TestOptions(object):
         # Model spec.
         opt.fov = tuple(opt.fov)
         opt.in_spec = dict(input=(1,) + opt.fov)
-        output_channels = 12 if opt.long_range else 3
-        opt.out_spec = dict(affinity=(output_channels,) + opt.fov)
+        opt.out_spec = dict(affinity=(opt.out_channels,) + opt.fov)
 
         # Scan spec.
         opt.scan_spec = dict(affinity=(3,) + opt.fov)
