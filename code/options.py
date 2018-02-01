@@ -85,7 +85,7 @@ class TestOptions(object):
 
     def initialize(self):
         self.parser.add_argument('--exp_name', required=True)
-        self.parser.add_argument('--data_dir', required=True)
+        self.parser.add_argument('--data_dir', default="")
         self.parser.add_argument('--data_names', nargs='+')
         self.parser.add_argument('--data_prefix', default="SNEMI3D")
         self.parser.add_argument('--data_tag', default="")
@@ -97,6 +97,7 @@ class TestOptions(object):
         self.parser.add_argument('--fov', type=int, default=[32,160,160], nargs='+')
         self.parser.add_argument('--depth', type=int, default=4)
         self.parser.add_argument('--out_channels', type=int, default=3)
+        self.parser.add_argument('--no_BN', action='store_true')
 
         # For benchmark.
         self.parser.add_argument('--dummy', action='store_true')
