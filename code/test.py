@@ -38,8 +38,11 @@ def load_chkpt(model, opt):
 
 def make_forward_scanner(data_name, opt):
     # Read an EM image.
-    img = emio.imread(os.path.join(opt.data_dir, data_name + '_img.h5'))
-    img = (img/255.).astype('float32')
+    if opt.dummy:
+        img = np.random.rand(*opt.input_size[-3:]).astype('float32')
+    else:
+        img = emio.imread(os.path.join(opt.data_dir, data_name + '_img.h5'))
+        img = (img/255.).astype('float32')
     # Build Dataset.
     vd = dp.VolumeDataset()
     vd.add_raw_data(key='input', data=img)
