@@ -34,7 +34,7 @@ class TrainNet(RSUNet):
     def eval_loss(self, preds, sample):
         self.loss = OrderedDict()
         self.nmsk = OrderedDict()
-        for i, k in enumerate(self.out_spec):
+        for i, k in enumerate(sorted(self.out_spec)):
             label = sample[k]
             mask = sample[k+'_mask'] if k+'_mask' in sample else None
             self.loss[k] = self.loss_fn(preds[i], label, mask)
