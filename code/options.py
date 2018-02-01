@@ -33,7 +33,7 @@ class BaseOptions(object):
         # Model spec.
         self.parser.add_argument('--fov', type=int, default=[32,160,160], nargs='+')
         self.parser.add_argument('--depth', type=int, default=4)
-        self.parser.add_argument('--momentum', type=float, default=0.001)
+        self.parser.add_argument('--momentum', type=float, default=0.1)
 
         # Data augmentation & transform.
         self.parser.add_argument('--long_range', action='store_true')
