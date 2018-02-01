@@ -98,6 +98,10 @@ class TestOptions(object):
         self.parser.add_argument('--depth', type=int, default=4)
         self.parser.add_argument('--out_channels', type=int, default=3)
 
+        # For benchmark.
+        self.parser.add_argument('--dummy', action='store_true')
+        self.parser.add_argument('--input_size', type=int, default=[128,1024,1024], nargs='+')
+
         self.initialized = True
 
     def parse(self):
