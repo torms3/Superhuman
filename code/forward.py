@@ -24,19 +24,20 @@ class Forward(object):
 
     def _scan(self, scanner):
         elapsed = list()
-        start = time.time()
-        inputs = scanner.pull()
-        while inputs is not None:
-            inputs = self._make_variables(inputs)
-            # Forward pass.
-            outputs = self.net(*inputs)
-            scanner.push(self._extract_data(outputs))
-            # Elapsed time.
-            elapsed.append(time.time() - start)
-            print("Elapsed: %.3f s" % elapsed[-1])
+        with torch.no_grad():
             start = time.time()
-            # Fetch next inputs.
             inputs = scanner.pull()
+            while inputs is not None:
+                inputs = self._make_variables(inputs)
+                # Forward pass.
+                outputs = self.net(*inputs)
+                scanner.push(self._extract_data(outputs))
+                # Elapsed time.
+                elapsed.append(time.time() - start)
+                print("Elapsed: %.3f s" % elapsed[-1])
+                start = time.time()
+                # Fetch next inputs.
+                inputs = scanner.pull()
         print("Elapsed: %.3f s/patch" % (sum(elapsed)/len(elapsed)))
         print("Throughput: %d voxel/s" % round(scanner.voxels()/sum(elapsed)))
         return scanner.outputs
@@ -46,7 +47,7 @@ class Forward(object):
         for k in sorted(self.opt.in_spec):
             data = np.expand_dims(sample[k], axis=0)
             tensor = torch.from_numpy(data)
-            inputs.append(Variable(tensor, requires_grad=False, volatile=True).cuda())
+            inputs.append(Variable(tensor, requires_grad=False).cuda())
         return inputs
 
     def _extract_data(self, outputs):
