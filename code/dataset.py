@@ -4,28 +4,24 @@ import torch
 from torch.utils.data import Dataset
 
 
+def worker_init_fn(worker_id):
+    # Each work already has its own random state (Torch).
+    seed = torch.IntTensor(1).random_()[0]
+    print("id = {}, seed = {}".format(worker_id, seed))
+    np.random.seed(seed)
+
+
 class SNEMI3D_Dataset(Dataset):
     """
     SNEMI3D dataset.
     """
-    def __init__(self, sampler, size, margin):
+    def __init__(self, sampler, size):
         super(SNEMI3D_Dataset, self).__init__()
         self.sampler = sampler
         self.size = size
-        self.seeded = False
-        self.margin = margin
-        # Seeding.
-        self.rng = np.random.RandomState()
 
     def __len__(self):
         return self.size
 
     def __getitem__(self, idx):
-        if not self.seeded:
-            assert idx < self.margin
-            high = 2**32 - self.margin
-            seed = self.rng.randint(high) + idx
-            print("idx = {}, seed = {}".format(idx, seed))
-            np.random.seed(seed)
-            self.seeded = True
         return self.sampler(imgs=['input'])
