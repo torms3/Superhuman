@@ -56,11 +56,11 @@ class LearningMonitor:
         f = h5py.File(fname, 'r', driver='core')
         # Train stats.
         train = f['/train']
-        for key, data in train.iteritems():
+        for key, data in train.items():
             self.train[key] = list(data.value)
         # Test stats.
         test = f['/test']
-        for key, data in test.iteritems():
+        for key, data in test.items():
             self.test[key] = list(data.value)
         f.close()
 
@@ -71,12 +71,12 @@ class LearningMonitor:
         # Crate h5 file to save.
         f = h5py.File(fname)
         # Train stats.
-        for key, data in self.train.iteritems():
+        for key, data in self.train.items():
             if key in ['numerators','denominators']:
                 continue
             f.create_dataset('/train/{}'.format(key), data=data)
         # Test stats.
-        for key, data in self.test.iteritems():
+        for key, data in self.test.items():
             if key in ['numerators','denominators']:
                 continue
             f.create_dataset('/test/{}'.format(key), data=data)

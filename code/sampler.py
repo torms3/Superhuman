@@ -44,11 +44,11 @@ class Sampler(object):
         fov = tuple([x+1 for x in fov])  # Will be cropped later.
         self.spec = dict(input=fov, affinity=fov, affinity_mask=fov)
     	# Augmentation.
-    	self.aug = aug
+        self.aug = aug
         # Long-range affinity.
-    	self.long_range = long_range
+        self.long_range = long_range
     	# Mode.
-    	self.mode = mode
+        self.mode = mode
         # Build data providers.
         self.dp = self.build_data_provider()
 
