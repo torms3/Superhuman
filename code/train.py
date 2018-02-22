@@ -45,13 +45,11 @@ def train(opt):
         sample = make_variables(next(dataiter['train']), opt, phase='train')
 
         # Optimizer step.
-        backend = time.time()
         optimizer.zero_grad()
         losses, nmasks = model(sample)
         loss = sum([l.mean() for l in losses])
         loss.backward()
         optimizer.step()
-        backend = time.time() - backend
 
         # Elapsed time.
         elapsed = time.time() - start
@@ -59,15 +57,12 @@ def train(opt):
         # Record keeping.
         keys = sorted(opt.out_spec)
         loss = {k: losses[i].mean().data[0] for i, k in enumerate(keys)}
-        nmsk = {k: nmasks[i].mean().data[0] for i, k in enumerate(keys)}
-        monitoring(monitor, 'train', loss, nmsk,
-                   backend=backend, elapsed=elapsed)
-        loss = {k: loss[k]/nmsk[k] for k in loss}
-        logging(writer, 'train', i+1, backend=backend, elapsed=elapsed, **loss)
+        nmsk = {k: nmasks[i].data[0] for i, k in enumerate(keys)}
+        monitoring(monitor, 'train', loss, nmsk, elapsed=elapsed)
 
         # Averaging & displaying stats.
         if (i+1) % opt.avgs_intv == 0 or i < opt.warm_up:
-            average_stats(i+1, monitor, opt, 'train')
+            average_stats(i+1, monitor, opt, 'train', writer=writer)
 
         # Validation loop.
         if (i+1) % opt.test_intv == 0:
@@ -94,17 +89,14 @@ def validation(iter_num, model, dataiter, opt, monitor, writer):
     for i in range(opt.test_iter):
         sample = make_variables(next(dataiter), opt, phase='test')
         # Forward pass.
-        backend = time.time()
         losses, nmasks = model(sample)
-        backend = time.time() - backend
         # Elapsed time.
         elapsed = time.time() - start
         # Monitoring.
         keys = sorted(opt.out_spec)
         loss = {k: losses[i].mean().data[0] for i, k in enumerate(keys)}
-        nmsk = {k: nmasks[i].mean().data[0] for i, k in enumerate(keys)}
-        monitoring(monitor, 'test', loss, nmsk,
-                   backend=backend, elapsed=elapsed)
+        nmsk = {k: nmasks[i].data[0] for i, k in enumerate(keys)}
+        monitoring(monitor, 'test', loss, nmsk, elapsed=elapsed)
         # Restart timer.
         start = time.time()
 
@@ -139,7 +131,6 @@ def average_stats(iter_num, monitor, opt, phase, writer=None):
     loss = dict()
     for k in sorted(opt.out_spec):
         loss[k] = monitor.get_last_value(k, phase)
-    backend = monitor.get_last_value('backend', phase)
     elapsed = monitor.get_last_value('elapsed', phase)
 
     # Logging to the event logs (optional).
@@ -151,8 +142,7 @@ def average_stats(iter_num, monitor, opt, phase, writer=None):
     for k, v in loss.items():
         disp += "%s = %.3f, " % (k, v)
     disp += "lr = %.6f, " % opt.base_lr
-    disp += "(backend = %.3f, " % elapsed
-    disp += "elapsed = %.3f). " % elapsed
+    disp += "(elapsed = %.3f). " % elapsed
     print(disp)
 
 

@@ -4,7 +4,6 @@ import time
 
 import torch
 from torch import nn
-from torch.autograd import Variable
 from torch.nn import functional as F
 
 import loss
@@ -20,14 +19,14 @@ class TrainNet(RSUNet):
                                        momentum=opt.momentum)
         self.in_spec = opt.in_spec
         self.out_spec = opt.out_spec
-        self.loss_fn = loss.BinaryCrossEntropyWithLogits()
+        self.loss_fn = loss.BCELoss()
 
     def forward(self, sample):
-        """Runs forward pass and computes loss."""
+        """Run forward pass and compute loss."""
         # Forward pass.
         inputs = [sample[k] for k in sorted(self.in_spec)]
         preds = super(TrainNet, self).forward(*inputs)
-        # Evaluates loss.
+        # Evaluate loss.
         return self.eval_loss(preds, sample)
 
     def eval_loss(self, preds, sample):
@@ -36,8 +35,7 @@ class TrainNet(RSUNet):
         for i, k in enumerate(sorted(self.out_spec)):
             label = sample[k]
             mask = sample[k+'_mask'] if k+'_mask' in sample else None
-            self.loss[k] = self.loss_fn(preds[i], label, mask)
-            self.nmsk[k] = mask.mean()
+            self.loss[k], self.nmsk[k] = self.loss_fn(preds[i], label, mask)
         return (list(self.loss.values()), list(self.nmsk.values()))
 
     def save(self, fpath):
@@ -52,7 +50,8 @@ class InferenceNet(RSUNet):
     RSUNet for inference.
     """
     def __init__(self, opt):
-        super(InferenceNet, self).__init__(opt.in_spec, opt.out_spec, opt.depth, use_bn=(not opt.no_BN))
+        super(InferenceNet, self).__init__(opt.in_spec, opt.out_spec, opt.depth,
+                                           use_bn=(not opt.no_BN))
         self.in_spec = opt.in_spec
         self.out_spec = opt.out_spec
         self.scan_spec = opt.scan_spec

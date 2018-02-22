@@ -29,6 +29,7 @@ class BaseOptions(object):
         self.parser.add_argument('--chkpt_intv', type=int, default=10000)
         self.parser.add_argument('--chkpt_num', type=int, default=0)
         self.parser.add_argument('--no_eval', action='store_true')
+        self.parser.add_argument('--size_average', action='store_true')
 
         # Model spec.
         self.parser.add_argument('--fov', type=int, default=[32,160,160], nargs='+')
@@ -97,6 +98,7 @@ class TestOptions(object):
         self.parser.add_argument('--fov', type=int, default=[32,160,160], nargs='+')
         self.parser.add_argument('--depth', type=int, default=4)
         self.parser.add_argument('--out_channels', type=int, default=3)
+        self.parser.add_argument('--scan_channels', type=int, default=3)
         self.parser.add_argument('--no_BN', action='store_true')
 
         # For benchmark.
@@ -116,7 +118,7 @@ class TestOptions(object):
         opt.out_spec = dict(affinity=(opt.out_channels,) + opt.fov)
 
         # Scan spec.
-        opt.scan_spec = dict(affinity=(3,) + opt.fov)
+        opt.scan_spec = dict(affinity=(opt.scan_channels,) + opt.fov)
         opt.scan_params = dict(stride=(0.5,0.5,0.5), blend='bump')
 
         # Directories.
