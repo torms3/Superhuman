@@ -135,7 +135,7 @@ def average_stats(iter_num, monitor, opt, phase, writer=None):
 
     # Logging to the event logs (optional).
     if writer is not None:
-        logging(writer, phase, iter_num, **loss)
+        logging(writer, phase, iter_num, elapsed=elapsed, **loss)
 
     # Dispaly to console.
     disp = "[%s] Iter: %8d, " % (phase, iter_num)
