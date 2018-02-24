@@ -16,10 +16,10 @@ class BCELoss(nn.Module):
         loss = F.binary_cross_entropy_with_logits(input, target, weight=mask,
                     size_average=False)
 
-        if mask is not None:
-            nmsk = torch.nonzero(mask.data).size(0)
+        if mask is None:
+            nmsk = target.numel()
         else:
-            nmsk = torch.numel(mask.data)
+            nmsk = mask.sum().data[0]
 
         # Pixelwise averge or sum.
         if self.size_average:

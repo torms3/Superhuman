@@ -116,7 +116,7 @@ class Sampler(object):
             dst.append((0,0,27))
             dst.append((0,27,0))
             dst.append((4,0,0))
-        aff = dp.Affinity(dst, 'affinity', 'affinity', crop=(1,1,1), base_w=0.5)
+        aff = dp.Affinity(dst, 'affinity', 'affinity', crop=(1,1,1), base_w=1.0)
         post.append(aff)
         return post
 

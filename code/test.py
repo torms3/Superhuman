@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import numpy as np
 import os
+import torch
 
 import dataprovider as dp
 import dataprovider.emio as emio
