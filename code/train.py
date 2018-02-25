@@ -18,6 +18,10 @@ from sampler import get_sampler
 
 
 def train(opt):
+    # cuDNN auto-tuning.
+    if opt.autotune:
+        torch.backends.cudnn.benchmark = True
+
     # Create model & learning monitor.
     net = TrainNet(opt)
     monitor = LearningMonitor()

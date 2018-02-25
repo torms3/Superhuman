@@ -16,6 +16,9 @@ class BaseOptions(object):
         self.parser.add_argument('--data_dir', required=True)
         self.parser.add_argument('--exp_name', required=True)
 
+        # cuDNN auto-tuning.
+        self.parser.add_argument('--autotune', action='store_false')
+
         # Training.
         self.parser.add_argument('--base_lr', type=float, default=0.01)
         self.parser.add_argument('--max_iter', type=int, default=1000000)
@@ -93,6 +96,9 @@ class TestOptions(object):
         self.parser.add_argument('--gpu_ids', type=str, default=['0'], nargs='+')
         self.parser.add_argument('--chkpt_num', type=int, default=0)
         self.parser.add_argument('--no_eval', action='store_true')
+
+        # cuDNN auto-tuning.
+        self.parser.add_argument('--autotune', action='store_false')
 
         # Model spec.
         self.parser.add_argument('--fov', type=int, default=[32,160,160], nargs='+')

@@ -13,6 +13,10 @@ from options import TestOptions
 
 
 def test(opt):
+    # cuDNN auto-tuning.
+    if opt.autotune:
+        torch.backends.cudnn.benchmark = True
+        
     # Create model.
     net = InferenceNet(opt)
     if opt.chkpt_num > 0:
