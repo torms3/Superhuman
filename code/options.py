@@ -17,7 +17,7 @@ class BaseOptions(object):
         self.parser.add_argument('--exp_name', required=True)
 
         # cuDNN auto-tuning.
-        self.parser.add_argument('--autotune', action='store_false')
+        self.parser.add_argument('--autotune', action='store_true')
 
         # Training.
         self.parser.add_argument('--base_lr', type=float, default=0.01)
@@ -98,7 +98,7 @@ class TestOptions(object):
         self.parser.add_argument('--no_eval', action='store_true')
 
         # cuDNN auto-tuning.
-        self.parser.add_argument('--autotune', action='store_false')
+        self.parser.add_argument('--autotune', action='store_true')
 
         # Model spec.
         self.parser.add_argument('--fov', type=int, default=[32,160,160], nargs='+')
