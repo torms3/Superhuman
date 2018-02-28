@@ -21,7 +21,7 @@ class SNEMI3D_Dataset(Dataset):
         return self.size
 
     def __getitem__(self, idx):
-        if not self.seeded:
+        if not self.seeded and self.margin > 0:
             assert idx < self.margin
             high = 2**32 - self.margin
             seed = self.rng.randint(high) + idx

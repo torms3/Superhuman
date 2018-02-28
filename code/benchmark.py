@@ -48,14 +48,20 @@ def train(opt):
         sample = make_variables(next(dataiter['train']), opt, phase='train')
 
         # Optimizer step.
+        torch.cuda.synchronize()
+        t1 = time.time()
         optimizer.zero_grad()
         losses, nmasks = model(sample)
         loss = sum([l.mean() for l in losses])
         loss.backward()
         optimizer.step()
+        torch.cuda.synchronize()
+        t2 = time.time()
+        backend = t2 - t1
 
         # Elapsed time.
         elapsed = time.time() - start
+        logging(writer, 'train', i+1, backend=backend, elapsed=elapsed)
 
         # Record keeping.
         keys = sorted(opt.out_spec)
